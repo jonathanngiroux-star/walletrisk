@@ -1,0 +1,29 @@
+{
+  "$comment": "Public payment addresses for the WalletRisk paid tier. These are RECEIVE-ONLY and meant to be published on the pricing page. Paid tier: send USDC on any listed EVM chain (or BTC/SOL/TRX/XLM), then claim via Telegram bot /paid <txhash> — WalletRisk verifies the transfer on-chain and unlocks alerts + deep report. No financial advice; informational service only.",
+  "currency": "USDC preferred (any listed chain), also BTC/SOL/TRX/XLM at spot value",
+  "pricing": {
+    "free": "$0 — instant risk report for any wallet (this repo / bot)",
+    "pro_monthly_usd": 9,
+    "pro_yearly_usd": 89,
+    "pro_includes": "approval + balance + dormancy alerts (daily checks), deep multi-chain report, email/Telegram delivery"
+  },
+  "addresses": {
+    "evm": {
+      "note": "same address on all EVM chains listed",
+      "address": "0x85ee7E71f762d772599cbF1EC20E651B30657521",
+      "ethereum": "0x85ee7E71f762d772599cbF1EC20E651B30657521",
+      "linea": "0x85ee7E71f762d772599cbF1EC20E651B30657521",
+      "base": "0x85ee7E71f762d772599cbF1EC20E651B30657521",
+      "bnb": "0x85ee7E71f762d772599cbF1EC20E651B30657521",
+      "polygon": "0x85ee7E71f762d772599cbF1EC20E651B30657521",
+      "monad": "0x85ee7E71f762d772599cbF1EC20E651B30657521",
+      "optimism": "0x85ee7E71f762d772599cbF1EC20E651B30657521",
+      "arbitrum": "0x85ee7E71f762d772599cbF1EC20E651B30657521",
+      "arc": "0x85ee7E71f762d772599cbF1EC20E651B30657521"
+    },
+    "bitcoin": "bc1qxe2zx5tv3hdreaej6s2x4p7han85uey828rrhg",
+    "solana": "4afnnpah1KYUF5T6mCfkdSo9guWcLQGvoEDnpqNZzfTw",
+    "tron": "TCJMp9eMGDzSM8bDCPB7QDz3KxqiuvBrW9",
+    "stellar": "GDKGPEO7CC46IRV7EUUWMITA3VA4447OZTFLGXDVXEZPV7VB3F5M7VA4"
+  }
+}

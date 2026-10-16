@@ -1,0 +1,14 @@
+# secrets — NEVER commit
+config/secrets.env
+*.env
+.env*
+
+# python
+__pycache__/
+*.pyc
+
+# runtime data
+reports/
+content/daily/*.raw.json
+runs.jsonl
+*.log
