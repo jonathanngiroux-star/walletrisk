@@ -37,9 +37,9 @@ HOOKS = [
 ]
 
 CTAS = [
-    "Run yours: github.com/walletrisk/walletrisk",
+    "Run yours: github.com/jonathanngiroux-star/walletrisk",
+    "Scan free at jonathanngiroux-star.github.io/walletrisk",
     "Free tool, no wallet connect, no keys — just an address.",
-    "Scan any wallet in seconds. Link below.",
 ]
 
 
