@@ -1,25 +1,32 @@
-# WalletRisk report — `0xf39b9ffac0fbc5ab3b9c04a729c27053e407e640`
+# 🟡 WalletRisk Report — 0xf39b…e640
 
-**Scanned:** 2026-10-16T16:38:26Z  
-**Grade: F** — 1 unlimited approval(s) actively exposed — revoke now.
+**Grade C · Overall risk 35/100** — moderate risk: worth cleaning up now
 
-- [Ethereum] Revoke USDT allowance to Uniswap V3: SwapRouter… — unlimited, holding $185.
+**Portfolio value:** $272.01 across 1 chains · scanned 2026-10-16
 
-## Ethereum
+## Risk breakdown
+```
+approvals      █████░░░░░░░░░░░░░░░ 27/100
+concentration  ███████████░░░░░░░░░ 56/100
+dormancy       ███░░░░░░░░░░░░░░░░░ 15/100
+```
 
-- Native balance: 0.0359 ETH
-- Last activity: 2021-08-23T15:48:58.000000Z
-- Holdings checked: 3 tokens
-- Findings: **1 HIGH / 0 MEDIUM / 0 LOW**
-- Revoke at: https://revoke.cash/address/0xf39b9ffac0fbc5ab3b9c04a729c27053e407e640/ethereum
+## Holdings (top)
+| Asset | Chain | Amount | Value |
+|---|---|---|---|
+| USDT | ethereum | 185.00 | $184.86 |
+| ETH | ethereum | 0.035889 | $87.11 |
+| ZIK | ethereum | 222.00 | $0.0281 |
 
-| Sev | Token | Spender | Exposure | Why |
-|-----|-------|---------|----------|-----|
-| HIGH | USDT | Uniswap V3: SwapRouter | $185 | UNLIMITED approval while holding $185 of USDT. |
+## Token approvals (live)
+Scanned Approval events back through history: 3 events → **2 live approvals**, 2 unlimited ⚠️
 
-## Method & disclaimers
+| Token | Chain | Spender | Allowance |
+|---|---|---|---|
+| USDT | ethereum | Uniswap V3: SwapRouter `0xe592427a…` | ∞ UNLIMITED |
+| CVC | ethereum | Uniswap V2: Router 02 `0x7a250d56…` | ∞ UNLIMITED |
 
-- Only live, on-chain approvals are reported — verified via eth_call at scan time.
-- Discovery covers curated majors + your wallet's own transaction history (last ~200 txs + recent transfers).
-- Approvals granted via Permit2/off-chain signatures are not visible as allowances; monitor regularly.
-- Not financial advice. Read-only tool; we never request keys or sign anything.
+⚠️ **Unlimited approvals found.** Anyone controlling those spender contracts can take the approved tokens at any time. Revoke via revoke.cash or ethallowance.com.
+
+
+_Informational only — not financial advice. Data: Blockscout & CoinGecko public APIs._

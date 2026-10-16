@@ -23,7 +23,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from walletrisk import format as fmt
+from walletrisk.scanner import scan_wallet, render_markdown as render_scan
 from walletrisk.report import analyze
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -56,51 +56,74 @@ def fmt_usd(v):
 
 
 def gen_daily(wallet: str, chains: list[str] | None = None) -> str | None:
-    r = analyze(wallet, chains=chains, with_approvals=False)
-    day_dir = os.path.join(CONTENT, r["generated_at"][:10])
+    """Daily example from the FAST registry scanner (includes live approvals)."""
+    r = scan_wallet(wallet, chains=chains)
+    day_dir = os.path.join(CONTENT, r["scanned_at"][:10])
     os.makedirs(day_dir, exist_ok=True)
     with open(os.path.join(day_dir, "report.md"), "w") as f:
-        f.write(fmt.markdown(r))
+        f.write(render_scan(r))
     with open(os.path.join(day_dir, "report.json"), "w") as f:
         json.dump(r, f, indent=2, default=str)
 
-    s = r["scores"]
-    appr = r["approvals"]
+    # aggregate findings across chains
+    findings = [f for c in r["chains"] for f in c.get("findings", [])]
+    unlimited = [f for f in findings if f.get("unlimited")]
+    exposure = sum(f.get("exposure_usd") or 0 for f in findings)
+    # portfolio value: native + tokens across chains
+    total_usd = 0.0
+    for c in r["chains"]:
+        n = c.get("native") or {}
+        if n.get("raw_balance") and n.get("exchange_rate"):
+            total_usd += n["raw_balance"] / 1e18 * float(n["exchange_rate"])
+        for h in c.get("holdings", []):
+            if h.get("usd_value"):
+                total_usd += h["usd_value"]
+    ok_chains = [c for c in r["chains"] if not c.get("error")]
     hook = random.choice(HOOKS)
     cta = random.choice(CTAS)
 
     # single X post (≤280)
-    x_post = (f"{hook}\n\n{r['address_short']} · grade {r['grade']} "
-              f"(risk {s['overall']}/100)\n"
-              f"• {fmt_usd(r['total_usd'])} across {len(r['chains_scanned'])} chains\n"
-              f"• {len(appr['live'])} live approvals, {len(appr['unlimited'])} unlimited\n"
-              f"\n{cta}")
+    x_post = (f"{hook}\n\n{r['address'][:8]}…{r['address'][-4:]} · grade {r['grade']}\n"
+              f"• {fmt_usd(total_usd)} across {len(ok_chains)} chains\n"
+              f"• {len(findings)} live approvals flagged, "
+              f"{len(unlimited)} unlimited\n"
+              f"• {fmt_usd(exposure)} exposed\n\n{cta}")
     if len(x_post) > 280:
         x_post = x_post[:277] + "…"
     with open(os.path.join(day_dir, "x_post.txt"), "w") as f:
         f.write(x_post)
 
     # thread
-    th = [f"{hook} {r['address_short']}, grade {r['grade']} "
-          f"(risk {s['overall']}/100). {cta} 🧵",
-          f"1/ Portfolio: {fmt_usd(r['total_usd'])} across {len(r['chains_scanned'])} chains. "
-          f"Top holdings: " + ", ".join(
-              f"{t['symbol']} ({fmt_usd(t['usd'])})"
-              for c2, s2 in r["per_chain"].items() for t in s2["tokens"][:2]
-              if t["usd"] > 0)[:180],
-          f"2/ Approvals: {len(appr['live'])} live, {len(appr['unlimited'])} unlimited. "
-          f"An unlimited approval lets the spender contract take the token anytime — "
-          f"revoke.cash lists yours for free.",
-          f"3/ Concentration {s['concentration']}/100 · dormancy {s['dormancy']}/100. "
-          f"Everything above is public on-chain data; nothing was fabricated.",
+    top_holdings = []
+    for c in ok_chains:
+        for h in c.get("holdings", [])[:3]:
+            if h.get("usd_value") and h["usd_value"] > 0:
+                top_holdings.append(f"{h['symbol']} ({fmt_usd(h['usd_value'])})")
+    th = [f"{hook} {r['address'][:8]}…{r['address'][-4:]}, grade {r['grade']}. {cta} 🧵",
+          f"1/ Portfolio: {fmt_usd(total_usd)} across {len(ok_chains)} chains. "
+          f"Top: {', '.join(top_holdings[:5]) or '—'}",
+          f"2/ Approvals: {len(findings)} live flagged, {len(unlimited)} UNLIMITED. "
+          f"Total exposure ~{fmt_usd(exposure)}. An unlimited approval lets the "
+          f"spender contract take the token anytime — revoke.cash lists yours free.",
+          f"3/ Every number here is live on-chain data read at scan time — "
+          f"allowance() calls, not guesses. Public data only, zero keys.",
           f"4/ Want yours scanned? Drop an address below or use the free tool. "
           f"Not financial advice — information only."]
     with open(os.path.join(day_dir, "thread.txt"), "w") as f:
         f.write("\n\n".join(th))
 
     # telegram
+    tg_lines = [f"🛡 WalletRisk daily scan",
+                f"`{r['address']}`" + (f" ({r['ens']})" if r.get("ens") else ""),
+                f"Grade {r['grade']} — {r['headline']}",
+                f"Portfolio ~{fmt_usd(total_usd)} · {len(findings)} live approvals "
+                f"({len(unlimited)} unlimited) · ~{fmt_usd(exposure)} exposed",
+                ""]
+    for act in r.get("actions", [])[:5]:
+        tg_lines.append(f"• {act}")
+    tg_lines += ["", "Free tool, no keys. Not financial advice.", cta]
     with open(os.path.join(day_dir, "telegram.txt"), "w") as f:
-        f.write(fmt.telegram(r) + f"\n\n{cta}")
+        f.write("\n".join(tg_lines))
 
     print(f"content for {wallet} -> {day_dir}")
     print("--- X POST ---")

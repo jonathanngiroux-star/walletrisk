@@ -1,0 +1,8 @@
+Wallet risk, in plain numbers:
+
+0xd8da6b…6045 · grade F
+• $14k across 1 chains
+• 1 live approvals flagged, 1 unlimited
+• $336k exposed
+
+Scan any wallet in seconds. Link below.

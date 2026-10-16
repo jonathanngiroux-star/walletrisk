@@ -1,0 +1,9 @@
+Wallet risk, in plain numbers: 0xd8da6b…6045, grade F. Scan any wallet in seconds. Link below. 🧵
+
+1/ Portfolio: $14k across 1 chains. Top: —
+
+2/ Approvals: 1 live flagged, 1 UNLIMITED. Total exposure ~$336k. An unlimited approval lets the spender contract take the token anytime — revoke.cash lists yours free.
+
+3/ Every number here is live on-chain data read at scan time — allowance() calls, not guesses. Public data only, zero keys.
+
+4/ Want yours scanned? Drop an address below or use the free tool. Not financial advice — information only.

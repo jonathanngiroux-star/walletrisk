@@ -23,15 +23,19 @@ import sys
 import time
 import urllib.parse
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
 
 from walletrisk.scanner import render_markdown, scan_wallet
 from walletrisk.validate import classify_input
 
+# reuse the sibling-verified payment verifier (EVM + BTC + SOL)
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+import verify_payment as VP
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SUBS_PATH = os.path.join(ROOT, "config", "subscribers.json")
 PAYMENTS = json.load(open(os.path.join(ROOT, "config", "payments.json")))
-
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 API = f"https://api.telegram.org/bot{TOKEN}"
 PRICE_USD = PAYMENTS["pricing"]["pro_monthly_usd"]

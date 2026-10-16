@@ -27,15 +27,22 @@ def approval_score(live_approvals: list[dict]) -> tuple[int, list[dict]]:
     """Risk from live ERC-20 approvals: unlimited approvals weigh most, and
     approvals on risky spenders more still. usd_value_at_risk is approximate
     (current wallet balance can't be at risk — it's at the SPENDER's mercy).
-    """
+
+    2026-10-16: actively-exposed unlimited approvals now add a +15 floor
+    per finding — an unlimited allowance on a token you still hold is the
+    classic rug vector and must never grade below C (composite weights
+    otherwise dilute it into 'low risk' territory)."""
     score = 0
     notes: list[dict] = []
     unlimited = [a for a in live_approvals if a.get("unlimited")]
     scored = [a for a in live_approvals if not a.get("unlimited")]
     for a in unlimited:
         # unlimited approvals are the classic rug vector
-        score += 6 if not a.get("usd_value_at_risk") else min(25, 6 + math.log10(
+        base = 6 if not a.get("usd_value_at_risk") else min(25, 6 + math.log10(
             max(10, a["usd_value_at_risk"])) * 4)
+        if a.get("usd_value_at_risk"):
+            base = max(base, 21)  # actively exposed unlimited: >= 21
+        score += base
     for a in scored:
         score += 2 if not a.get("usd_value_at_risk") else min(10, 2 + math.log10(
             max(10, a["usd_value_at_risk"])) * 2)

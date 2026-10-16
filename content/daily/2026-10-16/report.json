@@ -1,0 +1,499 @@
+{
+  "address": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+  "input": "vitalik.eth",
+  "ens": "vitalik.eth",
+  "scanned_at": "2026-10-16T16:52:46Z",
+  "grade": "F",
+  "headline": "1 unlimited approval(s) actively exposed \u2014 revoke now.",
+  "actions": [
+    "[Ethereum] Revoke WHITE allowance to 1inch: Aggregation Router v5\u2026 \u2014 unlimited, holding $335,600."
+  ],
+  "chains": [
+    {
+      "chain": "ethereum",
+      "label": "Ethereum",
+      "address": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+      "revoke_url": "https://revoke.cash/address/0xd8da6bf26964af9d7eed9e03e53415d37aa96045/ethereum",
+      "explorer_url": "https://etherscan.io/address/0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+      "holdings": [
+        {
+          "address": "0x9cdf242ef7975d8c68d5c1f5b6905801699b1940",
+          "symbol": "WHITE",
+          "name": "WhiteRock",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 10000000000000000000000000000,
+          "exchange_rate": "0.00003356",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/52513/small/logo_%2827%29.png?1733497755"
+        },
+        {
+          "address": "0x4e67db19044549ff420860834c91b45bad298722",
+          "symbol": "ZC",
+          "name": "Zip coin",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 40418468767906265949130604,
+          "exchange_rate": "0.00328196",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/102178898/small/IMG_0096.png?1790654746"
+        },
+        {
+          "address": "0xdd974d5c2e2928dea5f71b9825b8b646686bd200",
+          "symbol": "KNCL",
+          "name": "Kyber Network Crystal Legacy",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 700008531373791941118514,
+          "exchange_rate": "0.129459",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/947/small/logo-kncl.png?1696502063"
+        },
+        {
+          "address": "0xe172e9b6cfbeeb5593bdce3f077356fdb33af904",
+          "symbol": "FOLD",
+          "name": "The Interfold",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 240000000000000000000000,
+          "exchange_rate": "0.052763",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/102174402/small/fold.jpg?1783586823"
+        },
+        {
+          "address": "0xc18360217d8f7ab5e7c516566761ea12ce7f9d72",
+          "symbol": "ENS",
+          "name": "Ethereum Name Service",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 1144036076063671431479,
+          "exchange_rate": "5.81",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/19785/small/ENS.jpg?1727872989"
+        },
+        {
+          "address": "0xd26114cd6ee289accf82350c8d8487fedb8a0c07",
+          "symbol": "OMG",
+          "name": "OMG Network",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 123647030428532080615067,
+          "exchange_rate": "0.052228",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/776/small/OMG_Network.jpg?1696501928"
+        },
+        {
+          "address": "0x9925805b9b0dda34418798ccf95bcff5633f9176",
+          "symbol": "SENDOVER",
+          "name": "Sendover",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 10000000000000000000000000,
+          "exchange_rate": "0.00038167",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/102179137/small/IMG_3610.jpeg?1791292866"
+        },
+        {
+          "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+          "symbol": "WETH",
+          "name": "WETH",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 1466528037085158070,
+          "exchange_rate": "2447.84",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/2518/small/weth.png?1696503332"
+        },
+        {
+          "address": "0x77777feddddffc19ff86db637967013e6c6a116c",
+          "symbol": "TORN",
+          "name": "Tornado Cash",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 242915790807030888470,
+          "exchange_rate": "7.27",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/13496/small/ZINt8NSB_400x400.jpg?1696513257"
+        },
+        {
+          "address": "0x378e1be15be6d6d1f23cfe7090b6a77660dbf14d",
+          "symbol": "FOXE",
+          "name": "FOXE",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 1777819000000177781900000000000,
+          "exchange_rate": "5.88079E-10",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/30227/small/foxe.jpeg?1696529137"
+        },
+        {
+          "address": "0xf46ccb9e08fb7e32eed560c87d5e583a59a43420",
+          "symbol": "SPDG",
+          "name": "SPACEDOGE",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 100000000000000000000000000,
+          "exchange_rate": "0.00000702",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/67406/small/IMG_3034.jpeg?1752681208"
+        },
+        {
+          "address": "0x8de39b057cc6522230ab19c0205080a8663331ef",
+          "symbol": "WOJAK",
+          "name": "wojak",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 15395266187206408245221185959,
+          "exchange_rate": "4.4824E-8",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/102172016/small/usz-J1DohLTr0BHrWVa5zpZ-JocyeixXhmlZT3ytjdOM9cn0aYq6PT8CeUjnGEKAkZSuNa8BW2KkSsCQvYFQe8A-bvqs_AibzILyjP8sIBtqPZu3gTFjLLCvB6WjlzXIrRrnd_Hlg-fKWlf9byXwsQBZqvJ_lC8OHuz351DVfntD30avGrTc3msIIsZzobmywtrwuesT.jpg?1770967858"
+        },
+        {
+          "address": "0x3c3959052f60cbddc498b384958841b718112353",
+          "symbol": "SC",
+          "name": "SilverChat",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 50000000000000000000000000,
+          "exchange_rate": "0.00000519",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/102179007/small/500ssss.png?1790907541"
+        },
+        {
+          "address": "0x230ea9aed5d08afdb22cd3c06c47cf24ad501301",
+          "symbol": "SPX2.0",
+          "name": "SPX6900 2.0",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 2588640147134474424956438,
+          "exchange_rate": "0.00007815",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/51067/small/SPX6900_2.0.png?1729957569"
+        },
+        {
+          "address": "0x425087bf4969f45818c225ae30f8560ce518582e",
+          "symbol": "LFDOG",
+          "name": "lifedog",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 10000000000000000000000000,
+          "exchange_rate": "0.00001133",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/52278/small/lifedog.png?1732895178"
+        },
+        {
+          "address": "0x814e0908b12a99fecf5bc101bb5d0b8b5cdf7d26",
+          "symbol": "MDT",
+          "name": "Measurable Data",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 10000000000000000000000,
+          "exchange_rate": "0.00676336",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/2441/small/mdt_icon_120x120.png?1711452723"
+        },
+        {
+          "address": "0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
+          "symbol": "SUSDS",
+          "name": "sUSDS",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 43091714709517425379,
+          "exchange_rate": "1.11",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/52721/small/sUSDS_Coin.png?1734086971"
+        },
+        {
+          "address": "0x8baf5d75cae25c7df6d1e0d26c52d19ee848301a",
+          "symbol": "CATALORIAN",
+          "name": "Catalorian",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 257000000000000000000000,
+          "exchange_rate": "0.00016496",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/50257/small/Catalorian.png?1726723515"
+        },
+        {
+          "address": "0xc5f0f7b66764f6ec8c8dff7ba683102295e16409",
+          "symbol": "FDUSD",
+          "name": "First Digital USD",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 20644611000000000000,
+          "exchange_rate": "0.998185",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/31079/small/FDUSD_icon_black.png?1731097953"
+        },
+        {
+          "address": "0x80122c6a83c8202ea365233363d3f4837d13e888",
+          "symbol": "M87",
+          "name": "MESSIER",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 878787000000000000000000,
+          "exchange_rate": "0.00001794",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/25957/small/MESSIERlogonew_%281%29.png?1696525036"
+        },
+        {
+          "address": "0xef3daa5fda8ad7aabff4658f1f78061fd626b8f0",
+          "symbol": "MUZZ",
+          "name": "MUZZLE",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 1000000000000000000000000,
+          "exchange_rate": "0.00001575",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/35527/small/muzz-token-200.png?1709024198"
+        },
+        {
+          "address": "0x88800092ff476844f74dc2fc427974bbee2794ae",
+          "symbol": "WALLET",
+          "name": "Ambire Wallet",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 1236000001000000000000,
+          "exchange_rate": "0.01251024",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/23154/small/wallet.PNG?1696522445"
+        },
+        {
+          "address": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
+          "symbol": "USDE",
+          "name": "Ethena USDe",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 14739790000000000000,
+          "exchange_rate": "0.999505",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/33613/small/usde.png?1733810059"
+        },
+        {
+          "address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+          "symbol": "DAI",
+          "name": "Dai",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 14372078273323112880,
+          "exchange_rate": "1.0",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/9956/small/Badge_Dai.png?1696509996"
+        },
+        {
+          "address": "0xa27ec0006e59f245217ff08cd52a7e8b169e62d2",
+          "symbol": "AZTEC",
+          "name": "Aztec",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 687306186483639667490,
+          "exchange_rate": "0.02058635",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/70681/small/aztec.png?1763091883"
+        },
+        {
+          "address": "0xb29dc1703facd2967bb8ade2e392385644c6dca9",
+          "symbol": "GAGA",
+          "name": "Gaga (Pepe)",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 100000230719593200000000000000,
+          "exchange_rate": "1.29062E-10",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/36546/small/200x200_g.png?1730615214"
+        },
+        {
+          "address": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+          "symbol": "WEETH",
+          "name": "Wrapped eETH",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 4367159865037863,
+          "exchange_rate": "2706.55",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/33033/small/weETH.png?1701438396"
+        },
+        {
+          "address": "0x6368e1e18c4c419ddfc608a0bed1ccb87b9250fc",
+          "symbol": "XTP",
+          "name": "XTP",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 18309270170566593515704,
+          "exchange_rate": "0.00056247",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/10291/small/0_3SJYkk_400x400.jpg?1696510296"
+        },
+        {
+          "address": "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359",
+          "symbol": "SAI",
+          "name": "Sai",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 798800000000000000,
+          "exchange_rate": "12.87",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/1442/small/dai.png?1696502492"
+        },
+        {
+          "address": "0x03ab458634910aad20ef5f1c8ee96f1d6ac54919",
+          "symbol": "RAI",
+          "name": "Rai Reflex Index",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 3366907695158744370,
+          "exchange_rate": "3.04",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/14004/small/RAI-logo-coin.png?1696513733"
+        },
+        {
+          "address": "0xbbbbca6a901c926f240b89eacb641d8aec7aeafd",
+          "symbol": "LRC",
+          "name": "Loopring",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 1000321920450685440721,
+          "exchange_rate": "0.00936516",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/913/small/LRC.png?1696502034"
+        },
+        {
+          "address": "0x9813037ee2218799597d83d4a5b6f3b6778218d9",
+          "symbol": "BONE",
+          "name": "Bone ShibaSwap",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 150000000000000000000,
+          "exchange_rate": "0.059438",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/16916/small/bone_icon.png?1696516487"
+        },
+        {
+          "address": "0x235c8ee913d93c68d2902a8e0b5a643755705726",
+          "symbol": "BAG",
+          "name": "tehBag",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 100000000000000000000000,
+          "exchange_rate": "0.00007771",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/28950/small/tehBag-Logo.png?1696527923"
+        },
+        {
+          "address": "0x59d1e836f7b7210a978b25a855085cc46fd090b5",
+          "symbol": "JUSTICE",
+          "name": "AssangeDAO",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 100685000000000000000000,
+          "exchange_rate": "0.00006786",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/23555/small/JUSTICE_token_logo.png?1696522761"
+        },
+        {
+          "address": "0x8f8221afbb33998d8584a2b05749ba73c37a938a",
+          "symbol": "REQ",
+          "name": "Request",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 126000000000000000000,
+          "exchange_rate": "0.052222",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/1031/small/Request_icon_green.png?1696502140"
+        },
+        {
+          "address": "0x289ff00235d2b98b0145ff5d4435d3e92f9540a6",
+          "symbol": "BOOE",
+          "name": "Book of Ethereum",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 179133700000000000000,
+          "exchange_rate": "0.03548418",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/37384/small/RGh5luer_400x400.jpg?1714230970"
+        },
+        {
+          "address": "0x76bc677d444f1e9d57daf5187ee2b7dc852745ae",
+          "symbol": "XFT",
+          "name": "Offshift",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 99000000000000000000,
+          "exchange_rate": "0.061486",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/11977/small/CsBrPiA.png?1696511835"
+        },
+        {
+          "address": "0x9778ac3d5a2f916aa9abf1eb85c207d990ca2655",
+          "symbol": "OGSM",
+          "name": "OG SMINEM",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 3018052014000000000000000000,
+          "exchange_rate": "1.976E-9",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/32574/small/ogsmlogo.png?1739524078"
+        },
+        {
+          "address": "0x4f604735c1cf31399c6e711d5962b2b3e0225ad3",
+          "symbol": "USDGLO",
+          "name": "Glo Dollar",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 5000000000000000000,
+          "exchange_rate": "1.01",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/29319/small/GLO_logo_pine_on_cyan_1_3.png?1716971065"
+        },
+        {
+          "address": "0xe0151763455a8a021e64880c238ba1cff3787ff0",
+          "symbol": "APED",
+          "name": "Aped",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "raw_balance": 50000282890000000000,
+          "exchange_rate": "0.09814",
+          "reputation": "ok",
+          "icon_url": "https://assets.coingecko.com/coins/images/29906/small/Aped.png?1696528835"
+        }
+      ],
+      "native": {
+        "raw_balance": 5769653936881798941,
+        "exchange_rate": "2437.07",
+        "last_active": null
+      },
+      "last_active": "2026-10-13T07:25:11.000000Z",
+      "findings": [
+        {
+          "token": "0x9cdf242ef7975d8c68d5c1f5b6905801699b1940",
+          "spender": "0x111111125421ca6dc452d289314280a0f8842a65",
+          "token_symbol": "WHITE",
+          "spender_name": "1inch: Aggregation Router v5",
+          "decimals": 18,
+          "kind": "ERC-20",
+          "allowance_raw": 115792089237316195423570985008687907853269984665640564039457584007913129639935,
+          "unlimited": true,
+          "token_balance": 10000000000000000000000000000,
+          "token_balance_usd": 335600.0,
+          "token_reputation": "ok",
+          "exposure_usd": 335600.0,
+          "severity": "HIGH",
+          "why": "UNLIMITED approval while holding $335,600 of WHITE."
+        }
+      ],
+      "counts": {
+        "HIGH": 1,
+        "MEDIUM": 0,
+        "LOW": 0
+      },
+      "duration_s": 250.6
+    }
+  ],
+  "tool": "WalletRisk v1",
+  "notes": [
+    "Only live, on-chain approvals are reported \u2014 verified via eth_call at scan time.",
+    "Discovery covers curated majors + your wallet's own transaction history (last ~200 txs + recent transfers).",
+    "Approvals granted via Permit2/off-chain signatures are not visible as allowances; monitor regularly.",
+    "Not financial advice. Read-only tool; we never request keys or sign anything."
+  ]
+}

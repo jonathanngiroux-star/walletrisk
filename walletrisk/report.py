@@ -111,6 +111,15 @@ def analyze(input_str: str, chains: list[str] | None = None,
     dorm_score, dorm_note = dormancy_score(days_idle, tx_count)
     overall = composite({"approvals": appr_score, "concentration": conc_score,
                          "dormancy": dorm_score})
+    grade_letter = grade(overall)
+    # hard floor: an actively-exposed UNLIMITED approval is never "low risk"
+    exposed_unlimited = [a for a in live_approvals
+                        if a.get("unlimited") and a.get("usd_value_at_risk")]
+    floor_note = None
+    if exposed_unlimited and grade_letter in ("A", "B"):
+        grade_letter = "C"
+        floor_note = (f"{len(exposed_unlimited)} actively-exposed unlimited "
+                      f"approval(s) force a minimum grade of C")
 
     return {
         "input": input_str,
@@ -138,6 +147,7 @@ def analyze(input_str: str, chains: list[str] | None = None,
                       "days_idle": days_idle, "tx_count": tx_count},
         "scores": {"approvals": appr_score, "concentration": conc_score,
                    "dormancy": dorm_score, "overall": overall},
-        "grade": grade(overall),
-        "verdict": verdict(grade(overall)),
+        "grade": grade_letter,
+        "grade_floor_note": floor_note,
+        "verdict": verdict(grade_letter),
     }

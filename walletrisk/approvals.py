@@ -157,6 +157,18 @@ def parse_approval_events(logs: list[dict]) -> dict[str, dict]:
     return out
 
 
+def _known_spender_name(addr: str) -> str | None:
+    """Reverse-lookup a spender address in the curated registry."""
+    try:
+        from .registry import _SPENDERS
+        for name, chains, saddr in _SPENDERS:
+            if saddr == addr.lower():
+                return name
+    except Exception:
+        pass
+    return None
+
+
 def check_live(chain: str, owner: str, approvals: dict[str, dict],
                token_meta: dict[str, dict], batch_size: int = 100
                ) -> tuple[list[dict], int]:
@@ -213,22 +225,35 @@ def check_live(chain: str, owner: str, approvals: dict[str, dict],
             if allowance <= 0:
                 continue  # revoked — legitimately dropped
             meta = token_meta.get(ap["token"], {})
+            if not meta.get("symbol") or meta.get("symbol") == "Unknown":
+                # dormant token not in the holdings snapshot — fetch meta
+                from .token_meta import token_meta as fetch_meta
+                host = host_of(chain)
+                fetched = fetch_meta(host, ap["token"])
+                if fetched:
+                    meta = fetched
             try:
                 decimals = int(meta.get("decimals", 18) or 18)
             except (TypeError, ValueError):
                 decimals = 18
-            rate = float(meta.get("rate") or 0)
+            rate = float(meta.get("rate") or meta.get("exchange_rate") or 0)
             allowance_tokens = allowance / 10 ** decimals
             balance = float(meta.get("balance") or 0)
-            exposure_tokens = min(allowance_tokens, balance) if balance else allowance_tokens
+            if balance:
+                # can only lose what you hold: exposure = min(allowance, balance)
+                exposure_tokens = min(allowance_tokens, balance)
+            else:
+                # dormant: wallet holds none — exposure unknowable, not fake-huge
+                exposure_tokens = None
             live.append({
                 "token": ap["token"],
                 "symbol": meta.get("symbol", "Unknown"),
                 "spender": ap["spender"],
+                "spender_name": _known_spender_name(ap["spender"]),
                 "allowance_raw": allowance,
                 "unlimited": allowance >= MAX_UINT_THRESHOLD,
                 "allowance_tokens": allowance_tokens,
-                "usd_value_at_risk": exposure_tokens * rate if rate else None,
+                "usd_value_at_risk": exposure_tokens * rate if (exposure_tokens is not None and rate) else None,
                 "approved_block": ap["block"],
             })
     if skipped:

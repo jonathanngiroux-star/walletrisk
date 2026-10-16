@@ -1,0 +1,9 @@
+🛡 WalletRisk daily scan
+`0xd8da6bf26964af9d7eed9e03e53415d37aa96045` (vitalik.eth)
+Grade F — 1 unlimited approval(s) actively exposed — revoke now.
+Portfolio ~$14k · 1 live approvals (1 unlimited) · ~$336k exposed
+
+• [Ethereum] Revoke WHITE allowance to 1inch: Aggregation Router v5… — unlimited, holding $335,600.
+
+Free tool, no keys. Not financial advice.
+Scan any wallet in seconds. Link below.

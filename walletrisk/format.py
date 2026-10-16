@@ -94,7 +94,8 @@ def markdown(r: dict, deep: bool = False) -> str:
         lines.append("|---|---|---|---|")
         shown = appr if deep else appr[:6]
         for a in shown:
-            spender = f"`{a['spender'][:10]}…`"
+            name = a.get("spender_name")
+            spender = f"{name} `{a['spender'][:10]}…`" if name else f"`{a['spender'][:10]}…`"
             allw = "∞ UNLIMITED" if a["unlimited"] else _fmt_amt(a.get("allowance_tokens"))
             lines.append(f"| {a['symbol']} | {a['chain']} | {spender} | {allw} |")
         if not deep and len(appr) > 6:
