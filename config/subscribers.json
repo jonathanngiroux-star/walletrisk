@@ -1,3 +1,24 @@
 {
-  "_test_user": {"active": true, "wallets": ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"], "plan": "pro_monthly"}
+  "_test_user": {
+    "active": true,
+    "wallets": [
+      "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+    ],
+    "plan": "pro_monthly",
+    "last_state": {
+      "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045": {
+        "grade": "F",
+        "findings": [
+          {
+            "chain": "ethereum",
+            "token": "0x9cdf242ef7975d8c68d5c1f5b6905801699b1940",
+            "spender": "0x111111125421ca6dc452d289314280a0f8842a65",
+            "severity": "HIGH",
+            "unlimited": true,
+            "exposure_usd": 335600.0
+          }
+        ]
+      }
+    }
+  }
 }

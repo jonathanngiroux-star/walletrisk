@@ -8,6 +8,7 @@ on 2026-10-16. All findings are live, on-chain approvals verified via
 |---------|--------|-------|---------|
 | [wallet-1-infinite-usdt-uniswap-v3.md](wallet-1-infinite-usdt-uniswap-v3.md) | `0xf39b9FFA…7E640` | **C (35/100)** | UNLIMITED USDT allowance to Uniswap V3 SwapRouter while holding $185 USDT — plus a dormant UNLIMITED CVC allowance to Uniswap V2 Router (token no longer held) |
 | [wallet-2-infinite-shib-uniswap-v2.md](wallet-2-infinite-shib-uniswap-v2.md) | `0x297e8E26…a71Ad` | **C (47/100)** | UNLIMITED SHIB allowance to Uniswap V2 Router 02 while holding $52 SHIB |
+| [flagship-vitalik-eth.md](flagship-vitalik-eth.md) | `vitalik.eth` | **F** | Live UNLIMITED WHITE ($335k quoted) allowance to 1inch V5, found by the free tier — even the most-watched wallet on Ethereum forgets revokes |
 | [wallet-3-clean-control.md](wallet-3-clean-control.md) | `0x6d2c0058…0bF33` | **A (2/100)** | No live approvals found (swaps via Permit2 signatures — no persistent allowance) |
 
 The deep scan walks **full approval history** (every Approval event since
