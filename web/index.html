@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WalletRisk — free wallet approval scanner</title>
+<meta name="description" content="Scan any EVM wallet for risky token approvals. Free, keyless, read-only. Live on-chain checks across Ethereum, Base, Polygon, Arbitrum, Optimism, Gnosis.">
+<style>
+  :root {
+    --bg: #0a0e0c;
+    --surface: #10161200;
+    --card: #131a16;
+    --card2: #0d1310;
+    --border: #1e2a23;
+    --ink: #e8f0ea;
+    --muted: #7d8f85;
+    --accent: #34d399;
+    --accent-dim: #0f2f22;
+    --high: #f87171;
+    --med: #fbbf24;
+    --low: #60a5fa;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: "Space Grotesk", -apple-system, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { background: var(--bg); }
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, #12201926, transparent),
+      var(--bg);
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px; }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0;
+    position: sticky; top: 0; background: #0a0e0cf2; backdrop-filter: blur(8px); z-index: 10;
+  }
+  .logo-row { display: flex; align-items: center; gap: 10px; }
+  .logo { font-weight: 700; font-size: 17px; letter-spacing: .02em; }
+  .logo b { color: var(--accent); }
+  .tag { font-family: var(--mono); font-size: 11px; color: var(--muted); border: 1px solid var(--border); padding: 3px 8px; border-radius: 99px; }
+  .head-right { margin-left: auto; display: flex; gap: 16px; align-items: center; }
+  .head-right a { color: var(--muted); text-decoration: none; font-size: 13px; }
+  .head-right a:hover { color: var(--ink); }
+
+  /* --- command surface: the scan bar is the product --- */
+  .scan-zone { padding: 72px 0 40px; }
+  .kicker { font-family: var(--mono); font-size: 12px; color: var(--accent); letter-spacing: .18em; text-transform: uppercase; margin-bottom: 18px; }
+  h1 { font-size: clamp(28px, 4.5vw, 44px); font-weight: 700; letter-spacing: -.01em; line-height: 1.08; max-width: 640px; }
+  h1 em { color: var(--accent); font-style: normal; }
+  .sub { color: var(--muted); font-size: 15px; margin-top: 14px; max-width: 560px; line-height: 1.55; }
+
+  .cmdbar {
+    display: flex; gap: 10px; margin-top: 34px;
+    background: var(--card2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 10px; box-shadow: 0 0 0 6px #00000000, 0 12px 40px #00000066;
+    transition: border-color .15s;
+  }
+  .cmdbar:focus-within { border-color: var(--accent); }
+  .cmdbar input {
+    flex: 1; background: transparent; border: 0; outline: 0;
+    font-family: var(--mono); font-size: 15px; color: var(--ink); padding: 10px 12px; min-width: 0;
+  }
+  .cmdbar input::placeholder { color: #55665d; }
+  .cmdbar button {
+    background: var(--accent); color: #062b1b; border: 0; border-radius: 8px;
+    font-weight: 700; font-size: 15px; padding: 12px 26px; cursor: pointer;
+    font-family: var(--sans); letter-spacing: .01em;
+  }
+  .cmdbar button:disabled { background: #2a3a31; color: #5d7267; cursor: default; }
+  .chains-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .chain-pill {
+    font-family: var(--mono); font-size: 11px; padding: 4px 10px; border-radius: 99px;
+    border: 1px solid var(--border); color: var(--muted); cursor: pointer; user-select: none;
+    transition: all .12s;
+  }
+  .chain-pill.on { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .chain-pill[data-state="pending"] { opacity: .5; }
+  .hint { font-family: var(--mono); font-size: 11px; color: #55665d; margin-top: 12px; }
+  .hint a { color: var(--muted); }
+
+  /* --- results --- */
+  #results { padding-bottom: 80px; }
+  .status { font-family: var(--mono); font-size: 13px; color: var(--muted); padding: 20px 0; }
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--accent-dim); border-top-color: var(--accent); border-radius: 50%; animation: rot 1s linear infinite; vertical-align: -2px; margin-right: 8px; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  .grade-card {
+    display: flex; align-items: center; gap: 26px; background: var(--card);
+    border: 1px solid var(--border); border-radius: 14px; padding: 26px 28px; margin: 18px 0;
+  }
+  .grade-badge {
+    font-family: var(--mono); font-size: 54px; font-weight: 700; width: 92px; height: 92px;
+    display: flex; align-items: center; justify-content: center; border-radius: 16px; flex-shrink: 0;
+  }
+  .g-F { background: #2b1213; color: var(--high); border: 1px solid #55201f; }
+  .g-C { background: #2b2312; color: var(--med); border: 1px solid #4f421c; }
+  .g-A { background: #10261a; color: var(--accent); border: 1px solid #1e4a33; }
+  .grade-head { font-size: 19px; font-weight: 700; }
+  .grade-sub { color: var(--muted); font-size: 13.5px; margin-top: 6px; line-height: 1.5; }
+  .grade-actions { margin-top: 12px; display: flex; flex-direction: column; gap: 5px; }
+  .grade-actions span { font-size: 13.5px; color: var(--ink); }
+  .grade-actions span::before { content: "→ "; color: var(--accent); font-family: var(--mono); }
+
+  .chain-section { margin-top: 26px; }
+  .chain-head {
+    display: flex; align-items: baseline; gap: 12px; padding: 12px 4px;
+    border-bottom: 1px solid var(--border); font-family: var(--mono);
+  }
+  .chain-head .cname { font-size: 15px; font-weight: 700; color: var(--ink); }
+  .chain-head .cstats { font-size: 11.5px; color: var(--muted); }
+  .chain-head .crevoke { margin-left: auto; font-size: 11.5px; }
+  .chain-head .crevoke a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
+  .chain-head .crevoke a:hover { border-bottom-style: solid; }
+  .chain-err { font-family: var(--mono); font-size: 12px; color: var(--med); padding: 10px 4px; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th {
+    text-align: left; font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--muted); font-weight: 500; padding: 10px 10px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 12px 10px; font-size: 13.5px; border-bottom: 1px solid #141d18; vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  .sev { font-family: var(--mono); font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 4px; white-space: nowrap; }
+  .sev-HIGH { background: #2b1213; color: var(--high); }
+  .sev-MEDIUM { background: #2b2312; color: var(--med); }
+  .sev-LOW { background: #101b28; color: var(--low); }
+  .tk { font-weight: 700; }
+  .tk small { display: block; color: var(--muted); font-weight: 400; font-size: 11px; font-family: var(--mono); }
+  .addr { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+  .addr a { color: var(--muted); text-decoration: none; }
+  .addr a:hover { color: var(--accent); }
+  .why { color: #a9b8ae; font-size: 12.5px; line-height: 1.45; max-width: 380px; }
+  .exp { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+  .exp.hot { color: var(--high); font-weight: 700; }
+  .clean-row { font-family: var(--mono); font-size: 12.5px; color: var(--accent); padding: 14px 4px; }
+
+  /* --- how it works: quiet spec strip, not marketing cards --- */
+  .spec { border-top: 1px solid var(--border); padding: 44px 0 60px; margin-top: 30px; }
+  .spec h2 { font-size: 13px; font-family: var(--mono); color: var(--muted); letter-spacing: .16em; text-transform: uppercase; margin-bottom: 22px; font-weight: 500; }
+  .spec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0; }
+  .spec-item { padding: 18px 22px 18px 0; border-left: 2px solid var(--border); padding-left: 18px; }
+  .spec-item b { display: block; font-size: 14.5px; margin-bottom: 6px; }
+  .spec-item p { color: var(--muted); font-size: 12.5px; line-height: 1.55; }
+  .spec-item .n { font-family: var(--mono); color: var(--accent); font-size: 11px; }
+
+  footer { border-top: 1px solid var(--border); padding: 26px 0 60px; color: #55665d; font-size: 12px; font-family: var(--mono); line-height: 1.7; }
+  footer a { color: var(--muted); }
+
+  /* --- paid tier block --- */
+  .paid { border: 1px solid var(--border); border-radius: 14px; padding: 26px 28px; margin: 26px 0 8px; background: var(--card); }
+  .paid h3 { font-size: 16px; margin-bottom: 8px; }
+  .paid p { color: var(--muted); font-size: 13.5px; line-height: 1.6; margin-bottom: 14px; }
+  .paid .pl { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
+  .paid a.cta { display: inline-block; margin-top: 14px; color: #062b1b; background: var(--accent); padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; }
+  .paid .order-note { font-family: var(--mono); font-size: 11px; color: #55665d; margin-top: 12px; }
+
+  .err-box { background: #2b1213; border: 1px solid #55201f; color: #f3b6b6; font-family: var(--mono); font-size: 12.5px; padding: 14px 16px; border-radius: 10px; margin-top: 16px; }
+
+  @media (max-width: 640px) {
+    .cmdbar { flex-direction: column; }
+    .grade-card { flex-direction: column; align-items: flex-start; gap: 14px; }
+    td .why { max-width: 240px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spinner { animation-duration: 2s; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap logo-row">
+    <div class="logo">Wallet<b>Risk</b></div>
+    <span class="tag">v1 · free · read-only</span>
+    <div class="head-right">
+      <a href="#how">How it works</a>
+      <a href="https://github.com/katsironni/walletrisk" target="_blank" rel="noopener">GitHub</a>
+      <a href="#paid">Pro</a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="scan-zone">
+    <div class="kicker">Free wallet approval scanner</div>
+    <h1>Find the token approvals <em>you forgot you gave</em>.</h1>
+    <p class="sub">Every DEX swap you've ever made may have left a contract with permission to spend your tokens — forever. WalletRisk checks live, on-chain allowances across six chains and tells you exactly what to revoke.</p>
+
+    <div class="cmdbar">
+      <input id="addr" type="text" spellcheck="false" autocomplete="off"
+             placeholder="0x address or ENS name — e.g. vitalik.eth" aria-label="Wallet address">
+      <button id="scanBtn" onclick="scan()">Scan wallet</button>
+    </div>
+    <div class="chains-row" id="chainRow"></div>
+    <div class="hint">No wallet connection · no sign-in · nothing leaves your browser (queries go straight to public Blockscout & publicnode RPC) · <a href="#examples">see example scans</a></div>
+
+    <div id="status"></div>
+    <div id="results"></div>
+  </section>
+
+  <section id="paid" class="paid">
+    <h3>Pro — deep reports & monitoring</h3>
+    <p>Want this on autopilot? Pro adds a scheduled multi-chain re-scan, email alerts when a new approval appears on your wallet, and a deep report covering your full interaction history (not just the recent window). Pay in crypto, no account needed.</p>
+    <p class="pl">$9/mo or $89/yr · USDC on any supported chain, BTC, SOL, TRX or XLM</p>
+    <p class="pl">To order: send payment, then email <b>wallethygiene@agentmail.to</b> with your wallet address, tx hash and your delivery email. Reports arrive within 24h, verified on-chain — no accounts, no subscriptions to cancel.</p>
+    <a class="cta" href="#paid">Get Pro — instructions below</a>
+    <div class="order-note">Payment addresses are listed at the bottom of this page. Informational service only — not financial advice.</div>
+  </section>
+
+  <section class="spec" id="how">
+    <h2>How it works</h2>
+    <div class="spec-grid">
+      <div class="spec-item"><b><span class="n">01</span> Discovery</b><p>Your holdings and contract interactions are read from public Blockscout instances — keyless, no tracking, nothing stored.</p></div>
+      <div class="spec-item"><b><span class="n">02</span> Live checks</b><p>Each candidate pair (token × spender) is verified with a live <code>allowance()</code> call via publicnode RPC. Only real, current approvals are reported.</p></div>
+      <div class="spec-item"><b><span class="n">03</span> Risk model</b><p>UNLIMITED approvals on tokens you hold are HIGH severity. Dormant unlimited approvals are MEDIUM. Small allowances are LOW.</p></div>
+      <div class="spec-item"><b><span class="n">04</span> You revoke</b><p>Every finding links to revoke.cash, where you revoke with your own wallet. WalletRisk never asks for keys and never signs anything.</p></div>
+    </div>
+  </section>
+
+  <section class="spec" id="examples">
+    <h2>Example scans</h2>
+    <div class="spec-grid" style="grid-template-columns: 1fr;">
+      <div class="spec-item"><b><a href="examples/" style="color:var(--accent);text-decoration:none;">examples/</a> — real wallets, real findings</b>
+      <p>Published example reports generated by the same engine, including wallets with live UNLIMITED approvals found by the free scanner (grade F) and clean control wallets (grade A). Updated as new examples are added.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <div>WalletRisk — free, keyless wallet approval hygiene. Read-only: we never request private keys and never broadcast transactions.</div>
+    <div>Chains: Ethereum · Base · Polygon · Arbitrum · Optimism · Gnosis. Data: Blockscout (LGPL, community) & publicnode public RPC. Revoke via <a href="https://revoke.cash">revoke.cash</a>.</div>
+    <div>Pro payment addresses — EVM (USDC): <span id="pay-evm"></span> · BTC: <span id="pay-btc"></span> · SOL: <span id="pay-sol"></span></div>
+    <div>Not financial advice. Use at your own risk. <a href="https://github.com/katsironni/walletrisk">Source code (MIT)</a>.</div>
+  </footer>
+</div>
+
+<script>
+"use strict";
+// ---------------------------------------------------------------------------
+// WalletRisk browser engine — same pipeline as the Python CLI, zero backend.
+// Blockscout v2 REST + publicnode eth_call, both CORS-open, no keys.
+// ---------------------------------------------------------------------------
+const CHAINS = {
+  ethereum:  { host: "eth.blockscout.com",     rpc: "https://ethereum-rpc.publicnode.com",        native: "ETH",   label: "Ethereum", slug: "ethereum",  explorer: "https://etherscan.io" },
+  base:      { host: "base.blockscout.com",     rpc: "https://base-rpc.publicnode.com",            native: "ETH",   label: "Base",     slug: "base",      explorer: "https://basescan.org" },
+  polygon:   { host: "polygon.blockscout.com", rpc: "https://polygon-bor-rpc.publicnode.com",     native: "POL",   label: "Polygon",  slug: "polygon",   explorer: "https://polygonscan.com" },
+  arbitrum:  { host: "arbitrum.blockscout.com", rpc: "https://arbitrum-one-rpc.publicnode.com",    native: "ETH",   label: "Arbitrum", slug: "arbitrum",  explorer: "https://arbiscan.io" },
+  optimism:  { host: "optimism.blockscout.com", rpc: "https://optimism-rpc.publicnode.com",        native: "ETH",   label: "Optimism", slug: "optimism",  explorer: "https://optimistic.etherscan.io" },
+  gnosis:    { host: "gnosis.blockscout.com",   rpc: "https://gnosis-rpc.publicnode.com",          native: "xDAI",  label: "Gnosis",   slug: "gnosis",    explorer: "https://gnosisscan.io" },
+};
+
+// curated majors (always checked) — mirrors walletrisk/registry.py
+const REGISTRY = [
+  { name: "Uniswap: Permit2",              chains: null, addr: "0x000000000022d473030f116ddee9f6b158459460" },
+  { name: "Uniswap V2: Router 02",         chains: ["ethereum"], addr: "0x7a250d5630b4cf539739df2c5dacb4c659f2488d" },
+  { name: "Uniswap V3: SwapRouter",         chains: ["ethereum","arbitrum","optimism","polygon"], addr: "0xe592427a0aece92de3edee1f18e0157c05861564" },
+  { name: "Uniswap: Universal Router",     chains: ["ethereum","arbitrum","optimism","base","polygon"], addr: "0x3fc91a3afd70395cd496c647d5a6e9c314787c0f" },
+  { name: "1inch: Aggregation Router v5",   chains: ["ethereum","arbitrum","optimism","base","polygon"], addr: "0x111111125421ca6dc452d289314280a0f8842a65" },
+  { name: "OpenSea: Seaport marketplace",   chains: ["ethereum","arbitrum","optimism","base"], addr: "0x00000000006c3852cbef3e08e8df289169dee586" },
+  { name: "Aave V3: Pool",                  chains: ["ethereum"], addr: "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2" },
+];
+
+const MAX_TOKENS = 40, MAX_SPENDERS = 200, UNLIMITED = 2n ** 255n;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({
+  "&": "&" + "amp;",
+  "<": "&" + "lt;",
+  ">": "&" + "gt;",
+  '"': "&" + "quot;",
+  "'": "&" + "#39;"
+}[c]));
+const shortAddr = (a, n=4) => a.slice(0, 2+n) + "…" + a.slice(-n);
+
+// --- UI state ---------------------------------------------------------------
+let activeChains = new Set(Object.keys(CHAINS));
+function renderChainRow(pending) {
+  $("chainRow").innerHTML = Object.entries(CHAINS).map(([k, c]) =>
+    `<span class="chain-pill ${activeChains.has(k) ? "on" : ""}" data-chain="${k}"
+           onclick="toggleChain('${k}')">${c.label}</span>`).join("");
+}
+function toggleChain(k) { activeChains.has(k) ? activeChains.delete(k) : activeChains.add(k); renderChainRow(); }
+renderChainRow();
+
+// --- fetch helpers ----------------------------------------------------------
+const bsCache = new Map();
+async function bs(host, path) {
+  const url = `https://${host}/api/v2${path}`;
+  if (bsCache.has(url)) return bsCache.get(url);
+  const r = await fetch(url, { headers: { "Accept": "application/json" } });
+  if (!r.ok) throw new Error(`blockscout ${r.status}`);
+  const j = await r.json();
+  bsCache.set(url, j);
+  return j;
+}
+async function rpc(url, method, params) {
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) });
+  const j = await r.json();
+  if (j.error) throw new Error(j.error.message || "rpc error");
+  return j.result;
+}
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const pad = (a) => a.toLowerCase().replace("0x", "").padStart(64, "0");
+
+// --- pipeline ----------------------------------------------------------------
+async function scan() {
+  const input = $("addr").value.trim();
+  const btn = $("scanBtn");
+  if (!input) { $("addr").focus(); return; }
+  const kind = classify(input);
+  if (!kind.ok) { $("status").innerHTML = `<div class="err-box">${esc(kind.msg)}</div>`; return; }
+
+  btn.disabled = true; btn.textContent = "Scanning…";
+  $("results").innerHTML = "";
+  const t0 = performance.now();
+  const log = (m) => $("status").innerHTML = `<div class="status"><span class="spinner"></span>${esc(m)}</div>`;
+  log("Resolving address…");
+
+  let address;
+  try {
+    address = kind.type === "ens" ? await resolveEns(input) : input.toLowerCase();
+  } catch (e) {
+    $("status").innerHTML = `<div class="err-box">Could not resolve ${esc(input)}: ${esc(e.message)}</div>`;
+    btn.disabled = false; btn.textContent = "Scan wallet"; return;
+  }
+
+  const chains = [...activeChains];
+  if (!chains.length) { $("status").innerHTML = `<div class="err-box">Select at least one chain.</div>`; btn.disabled = false; btn.textContent = "Scan wallet"; return; }
+
+  // run chains sequentially to be gentle on free APIs
+  const results = [];
+  for (const c of chains) {
+    log(`Scanning ${CHAINS[c].label}… (${chains.indexOf(c)+1}/${chains.length})`);
+    results.push(await scanChain(c, address));
+  }
+
+  // grade
+  const counts = { HIGH: 0, MEDIUM: 0, LOW: 0 };
+  let exposure = 0;
+  for (const r of results) for (const f of r.findings) {
+    counts[f.severity]++; if (f.exposure_usd) exposure += f.exposure_usd;
+  }
+  const grade = counts.HIGH ? "F" : (counts.MEDIUM ? "C" : "A");
+  const headline = counts.HIGH ? `${counts.HIGH} unlimited approval${counts.HIGH>1?"s":""} actively exposed — revoke now.`
+    : counts.MEDIUM ? `${counts.MEDIUM} approval${counts.MEDIUM>1?"s":""} worth revoking — real exposure found.`
+    : counts.LOW ? "Only trivial approvals found — hygiene is good."
+    : "No live approvals found by this scan.";
+
+  $("status").innerHTML = `<div class="status">Scan complete in ${((performance.now()-t0)/1000).toFixed(0)}s · ${new Date().toISOString().slice(0,16).replace("T"," ")} UTC</div>`;
+  renderResults({ address, grade, headline, results, exposure, counts });
+  btn.disabled = false; btn.textContent = "Scan wallet";
+}
+
+function classify(input) {
+  if (/^0x[0-9a-fA-F]{40}$/.test(input)) return { ok: true, type: "addr" };
+  if (/^[a-zA-Z0-9-]{3,}\.eth$/.test(input) && !input.includes(" ")) return { ok: true, type: "ens" };
+  return { ok: false, msg: "Enter a 0x-prefixed 42-character EVM address, or an ENS name like vitalik.eth" };
+}
+
+async function resolveEns(name) {
+  const d = await bs("eth.blockscout.com", `/search?q=${encodeURIComponent(name)}`);
+  for (const it of d.items || []) {
+    if (it.type === "ens_domain") {
+      const a = it.ens_info?.address_hash || it.address_hash;
+      if (a) return a.toLowerCase();
+    }
+  }
+  throw new Error("name not found in ENS");
+}
+
+async function scanChain(chainKey, address) {
+  const C = CHAINS[chainKey];
+  const out = { chain: chainKey, label: C.label, findings: [], holdings: 0, error: null,
+                revoke: `https://revoke.cash/address/${address}/${C.slug}` };
+  try {
+    // 1. holdings
+    const d = await bs(C.host, `/addresses/${address}/tokens`);
+    const items = (d.items || []).map(it => {
+      const t = it.token || {};
+      return { address: (t.address_hash || "").toLowerCase(), symbol: t.symbol || "?",
+               decimals: +(t.decimals ?? 18), kind: t.type || "ERC-20",
+               raw: BigInt(it.value || 0), rate: t.exchange_rate ? +t.exchange_rate : null };
+    }).filter(t => t.raw > 0n).slice(0, MAX_TOKENS);
+    out.holdings = items.length;
+
+    // 2. spenders: registry + own history
+    const spenders = new Map();
+    for (const s of REGISTRY) if (!s.chains || s.chains.includes(chainKey)) spenders.set(s.addr, s.name);
+    try {
+      const txs = await bs(C.host, `/addresses/${address}/transactions`);
+      for (const tx of txs.items || []) {
+        const to = tx.to?.hash?.toLowerCase();
+        const from = tx.from?.hash?.toLowerCase();
+        if (to && to !== address && !spenders.has(to)) spenders.set(to, null);
+        if (from && from !== address && !spenders.has(from)) spenders.set(from, null);
+      }
+    } catch (e) { /* history optional */ }
+    const spenderList = [...spenders.entries()].slice(0, MAX_SPENDERS);
+
+    // 3. live allowance checks — budgeted, batched
+    const erc20s = items.filter(t => t.kind === "ERC-20");
+    const jobs = [];
+    for (const t of erc20s) for (const [saddr, sname] of spenderList)
+      jobs.push({ t, saddr, sname });
+    const BATCH = 10;
+    for (let i = 0; i < jobs.length; i += BATCH) {
+      const slice = jobs.slice(i, i + BATCH);
+      const vals = await Promise.all(slice.map(j =>
+        rpc(C.rpc, "eth_call",
+            [{ to: j.t.address, data: "0xdd62ed3e" + pad(address) + pad(j.saddr) }, "latest"])
+          .then(v => BigInt(v === "0x" || !v ? "0x0" : v))
+          .catch(() => null)));
+      slice.forEach((j, idx) => {
+        const v = vals[idx];
+        if (v !== null && v > 0n) out.findings.push(mkFinding(j.t, j.saddr, j.sname, v));
+      });
+      await sleep(120); // be gentle with publicnode
+    }
+
+    // 4. NFT approvals-for-all (registry hubs × NFT holdings)
+    const nfts = items.filter(t => t.kind.startsWith("ERC-721") || t.kind.startsWith("ERC-1155"));
+    const hubs = REGISTRY.filter(s => s.name.includes("OpenSea") && (!s.chains || s.chains.includes(chainKey)));
+    for (const nft of nfts) for (const hub of hubs) {
+      try {
+        const v = await rpc(C.rpc, "eth_call",
+          [{ to: nft.address, data: "0xe985e9c5" + pad(address) + pad(hub.addr) }, "latest"]);
+        if (v && BigInt(v) === 1n) out.findings.push({
+          nft: true, token_symbol: nft.symbol, kind: nft.kind, spender: hub.addr,
+          spender_name: hub.name, severity: "HIGH", unlimited: true,
+          why: "ApprovalForAll: the operator can move EVERY item in this collection.",
+          exposure_usd: null,
+        });
+      } catch (e) {}
+    }
+
+    out.findings.sort((a, b) => sevRank(a.severity) - sevRank(b.severity) || (b.exposure_usd||0) - (a.exposure_usd||0));
+  } catch (e) {
+    out.error = e.message;
+  }
+  return out;
+}
+
+function mkFinding(t, saddr, sname, v) {
+  const usdBal = t.rate ? Number(t.raw) / 10 ** t.decimals * t.rate : 0;
+  const unlimited = v >= UNLIMITED;
+  const allUsd = t.rate ? Number(v) / 10 ** t.decimals * t.rate : 0;
+  const exposure = unlimited ? usdBal : Math.min(allUsd, usdBal);
+  let severity, why;
+  if (unlimited && usdBal > 0) {
+    severity = "HIGH";
+    why = `UNLIMITED approval while holding $${usdBal.toFixed(0)} of ${t.symbol}.`;
+  } else if (unlimited) {
+    severity = "MEDIUM";
+    why = "UNLIMITED approval on a token you no longer hold — a dormant trap if you ever receive it again.";
+  } else if (exposure >= 10) {
+    severity = "MEDIUM";
+    why = `Live approval worth ~$${exposure.toFixed(0)}.`;
+  } else {
+    severity = "LOW";
+    why = "Small or zero-value live approval.";
+  }
+  return { token_symbol: t.symbol, token: t.address, spender: saddr, spender_name: sname,
+           allowance: v, unlimited, severity, why, exposure_usd: exposure, balance_usd: usdBal };
+}
+const sevRank = (s) => ({ HIGH: 0, MEDIUM: 1, LOW: 2 })[s] ?? 3;
+
+// --- render ------------------------------------------------------------------
+function renderResults({ address, grade, headline, results, exposure, counts }) {
+  const actions = [];
+  for (const r of results) for (const f of r.findings) {
+    if (f.severity === "HIGH") actions.push(`[${r.label}] Revoke ${f.token_symbol} allowance to ${f.spender_name || shortAddr(f.spender)} — unlimited, holding $${(f.balance_usd||0).toFixed(0)}.`);
+    if (actions.length >= 8) break;
+  }
+  if (!actions.length) for (const r of results) for (const f of r.findings) {
+    if (f.severity === "MEDIUM") actions.push(`[${r.label}] Consider revoking ${f.token_symbol} → ${f.spender_name || shortAddr(f.spender)}.`);
+    if (actions.length >= 8) break;
+  }
+
+  let html = `
+  <div class="grade-card">
+    <div class="grade-badge g-${grade}">${grade}</div>
+    <div>
+      <div class="grade-head">${esc(headline)}</div>
+      <div class="grade-sub">Total exposure at risk: <b style="color:${exposure>0?"var(--high)":"var(--accent)"}">$${exposure.toFixed(2)}</b> ·
+      ${counts.HIGH} high · ${counts.MEDIUM} medium · ${counts.LOW} low · wallet <span style="font-family:var(--mono)">${shortAddr(address, 6)}</span></div>
+      <div class="grade-actions">${actions.length ? actions.map(a => `<span>${esc(a)}</span>`).join("") : `<span>No revokes needed according to this scan.</span>`}</div>
+    </div>
+  </div>`;
+
+  for (const r of results) {
+    html += `<div class="chain-section">
+      <div class="chain-head">
+        <span class="cname">${r.label}</span>
+        <span class="cstats">${r.error ? "" : `${r.holdings} holdings checked`}</span>
+        <span class="crevoke"><a href="${r.revoke}" target="_blank" rel="noopener">Revoke on revoke.cash ↗</a></span>
+      </div>`;
+    if (r.error) {
+      html += `<div class="chain-err">⚠ ${esc(r.label)} scan failed: ${esc(r.error)} — free endpoints rate-limit; try again in a minute.</div></div>`;
+      continue;
+    }
+    if (!r.findings.length) {
+      html += `<div class="clean-row">✓ No live approvals found on ${r.label} by this scan.</div></div>`;
+      continue;
+    }
+    html += `<table><thead><tr><th>Sev</th><th>Token</th><th>Spender</th><th>Exposure</th><th>Why</th></tr></thead><tbody>`;
+    for (const f of r.findings) {
+      const exp = f.exposure_usd === null || f.exposure_usd === undefined
+        ? "—" : `$${f.exposure_usd.toFixed(0)}`;
+      html += `<tr>
+        <td><span class="sev sev-${f.severity}">${f.severity}</span></td>
+        <td class="tk">${esc(f.token_symbol)}${f.token ? `<small>${shortAddr(f.token)}</small>` : ""}</td>
+        <td class="addr">${esc(f.spender_name || "unknown contract")}<br>
+            <a href="${r.explorer || "https://etherscan.io"}/address/${f.spender}" target="_blank" rel="noopener">${shortAddr(f.spender)}</a></td>
+        <td class="exp ${f.severity==="HIGH"?"hot":""}">${exp}</td>
+        <td class="why">${esc(f.why)}</td>
+      </tr>`;
+    }
+    html += `</tbody></table></div>`;
+  }
+  $("results").innerHTML = html;
+}
+
+// payment addresses (public by design)
+$("pay-evm").textContent = "0x85ee7E71f762d772599cbF1EC20E651B30657521";
+$("pay-btc").textContent = "bc1qxe2zx5tv3hdreaej6s2x4p7han85uey828rrhg";
+$("pay-sol").textContent = "4afnnpah1KYUF5T6mCfkdSo9guWcLQGvoEDnpqNZzfTw";
+
+// Enter key triggers scan
+$("addr").addEventListener("keydown", e => { if (e.key === "Enter") scan(); });
+</script>
+</body>
+</html>

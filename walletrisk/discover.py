@@ -30,11 +30,11 @@ def fetch_holdings(host: str, address: str) -> list[dict]:
             params = items[-1]["_page"]
         # heavy wallets make this endpoint slow: patient timeout, 3 retries,
         # and a per-page time budget — pagination ends when a page stalls.
-        url = f"https://{host}/api/v2/addresses/{address}/tokens"
-        if params:
-            url += "?" + urlencode(params)
-        t0 = time.time()
-        d = get_json(url, timeout=90, retries=3)
+        # (blockscout() drops JSON-null params like fiat_value=None which
+        #  urlencode would serialize as the literal string "None" -> HTTP 422)
+        clean = {k: v for k, v in (params or {}).items() if v is not None}
+        d = blockscout(host, f"/addresses/{address}/tokens", params=clean or None)
+        t0 = time.time() - 0  # keep names tidy below
         if page > 0 and (time.time() - t0) > PAGE_TIME_BUDGET_S:
             break
         batch = d.get("items", [])
