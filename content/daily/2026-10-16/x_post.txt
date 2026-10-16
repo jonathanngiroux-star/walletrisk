@@ -1,8 +1,8 @@
-Wallet risk, in plain numbers:
+Today's free wallet risk scan:
 
 0xd8da6b…6045 · grade F
 • $14k across 1 chains
 • 1 live approvals flagged, 1 unlimited
-• $336k exposed
+• $335k exposed
 
-Scan any wallet in seconds. Link below.
+Run yours: github.com/walletrisk/walletrisk
