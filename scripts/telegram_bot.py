@@ -91,55 +91,31 @@ def handle_scan(chat_id: int, target: str, deep: bool, user_id: int) -> None:
 
 
 def handle_paid(chat_id: int, user_id: int, txhash: str) -> None:
-    """Verify an on-chain payment tx and activate PRO."""
-    from walletrisk.client import get_json
+    """Verify an on-chain payment via the shared verify_payment module."""
     import datetime as dt
+    txhash = txhash.strip()
     if not txhash.startswith("0x") or len(txhash) != 66:
+        # BTC/SOL: delegate to manual verification message
         tg("sendMessage", chat_id=chat_id,
-           text="❌ That doesn't look like a transaction hash (0x + 64 hex).")
+           text="For BTC/SOL payments, reply with the chain and tx hash "
+                "(e.g. /paid bitcoin:<txhash>). EVM: /paid 0x…")
         return
-    # Try all supported explorers for the tx
-    found = None
+    ok_chain = None
     for chain in SUPPORTED_EVM:
         try:
-            host = {"ethereum": "eth.blockscout.com", "base": "base.blockscout.com",
-                    "polygon": "polygon.blockscout.com", "arbitrum": "arbitrum.blockscout.com",
-                    "optimism": "optimism.blockscout.com", "gnosis": "gnosis.blockscout.com"}[chain]
-            d = get_json(f"https://{host}/api/v2/transactions/{txhash}", timeout=20, retries=1)
-            if d.get("hash"):
-                found = (chain, d)
+            ok, msg = VP.verify_evm(chain, txhash, PRICE_USD)
+            if ok:
+                ok_chain = (chain, msg)
                 break
         except Exception:
             continue
-    if not found:
+    if not ok_chain:
         tg("sendMessage", chat_id=chat_id,
-           text="⚠️ Couldn't find that tx on any supported chain. Check the hash?")
+           text="⚠️ Could not verify that tx on any supported chain — "
+                "check the hash, or if it's very recent, wait a block "
+                "or two and retry.")
         return
-    chain, tx = found
-    receiver = (tx.get("to") or {}).get("hash", "").lower()
-    our_addr = PAYMENTS["addresses"]["evm"]["address"].lower()
-    if receiver != our_addr:
-        tg("sendMessage", chat_id=chat_id,
-           text=f"❌ That tx went to {receiver[:14]}…, not a WalletRisk address.")
-        return
-    # USD value: native transfer value × price, or use token_transfers for USDC
-    # Simplification: treat any confirmed tx ≥ $5 equivalent as a month of PRO.
-    value_eth = int(tx.get("value") or 0) / 1e18
-    # token transfer path (USDC): look at token_transfers list in tx
-    usd = None
-    for tt in tx.get("token_transfers") or []:
-        total = tt.get("total") or {}
-        if total.get("value") and total.get("decimals"):
-            amt = int(total["value"]) / 10 ** int(total["decimals"])
-            # USDC-ish stable: assume $1 if symbol unknown
-            usd = (usd or 0) + amt
-    if usd is None:
-        usd = value_eth * 2500  # rough ETH fallback
-    if usd < PRICE_USD * 0.5:
-        tg("sendMessage", chat_id=chat_id,
-           text=f"❌ Tx value looks like ~${usd:.0f} — need ≥ ${PRICE_USD} "
-                "(or a bit less with fees) for PRO.")
-        return
+    chain, msg = ok_chain
     subs = load_subs()
     until = dt.datetime.now(dt.timezone.utc) + dt.timedelta(days=31)
     subs[str(user_id)] = {"active": True, "until": until.isoformat(),
@@ -147,8 +123,9 @@ def handle_paid(chat_id: int, user_id: int, txhash: str) -> None:
                           "chain": chain}
     save_subs(subs)
     tg("sendMessage", chat_id=chat_id,
-       text=f"💎 PRO activated until {until:%Y-%m-%d}! Verified {txhash[:18]}… "
-            f"on {chain}. /deep is now unlocked. Thank you!")
+       text=f"💎 PRO activated until {until:%Y-%m-%d}!\n"
+            f"Verified on {chain}: {msg}\n"
+            f"/deep is now unlocked. Thanks for supporting WalletRisk!")
 
 
 def handle_update(update: dict) -> None:

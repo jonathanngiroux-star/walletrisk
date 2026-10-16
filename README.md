@@ -4,7 +4,7 @@
 approvals you forgot you gave — live UNLIMITED allowances, dormant traps,
 NFT blanket approvals — across six EVM chains, using only public data.
 
-- **Web app (no backend):** `web/index.html` — runs entirely in your
+- **Web app (no backend):** `docs/index.html` — runs entirely in your
   browser, querying public Blockscout instances and publicnode RPCs
   directly (both are CORS-open). Nothing is stored, nothing is logged.
 - **Python CLI / engine:** same pipeline, for batch scans and reports.
