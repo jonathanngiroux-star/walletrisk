@@ -2,7 +2,7 @@
   "address": "0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae",
   "input": "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe",
   "ens": null,
-  "scanned_at": "2026-10-18T10:04:05Z",
+  "scanned_at": "2026-10-18T10:13:04Z",
   "grade": "A",
   "headline": "No live approvals found by this scan.",
   "actions": [],
@@ -457,7 +457,7 @@
       ],
       "native": {
         "raw_balance": 5774491794456062094343,
-        "exchange_rate": "2425.13",
+        "exchange_rate": "2421.4",
         "last_active": null
       },
       "last_active": "2026-10-10T16:31:11.000000Z",
@@ -467,7 +467,7 @@
         "MEDIUM": 0,
         "LOW": 0
       },
-      "duration_s": 235.1
+      "duration_s": 229.2
     }
   ],
   "tool": "WalletRisk v1",

@@ -1,6 +1,6 @@
-Wallet risk, in plain numbers: 0xde0b29…7bae, grade A. Free tool, no wallet connect, no keys — just an address. 🧵
+Today's free wallet risk scan: 0xde0b29…7bae, grade A. Run yours: github.com/jonathanngiroux-star/walletrisk 🧵
 
-1/ Portfolio: $14.00M across 1 chains. Top: —
+1/ Portfolio: $13.98M across 1 chains. Top: —
 
 2/ Approvals: 0 live flagged, 0 UNLIMITED. Total exposure ~$0.00. An unlimited approval lets the spender contract take the token anytime — revoke.cash lists yours free.
 
