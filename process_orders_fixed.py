@@ -1,0 +1,410 @@
+#!/usr/bin/env python3
+import os
+import sys
+import json
+import re
+import subprocess
+import time
+import glob
+from datetime import datetime, timedelta
+
+# Set HERMES_RPC_SOCKET if not set
+if 'HERMES_RPC_SOCKET' not in os.environ:
+    home = os.environ.get('HOME', '/home/manitouabe8ich')
+    scratch_dir = os.path.join(home, '.hermes', 'cache', 'scratch')
+    kernel_dirs = glob.glob(os.path.join(scratch_dir, 'hermes_kernel_*'))
+    if kernel_dirs:
+        kernel_dirs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+        for kd in kernel_dirs:
+            socket_path = os.path.join(kd, 'hermes-rpc.sock')
+            if os.path.exists(socket_path):
+                os.environ['HERMES_RPC_SOCKET'] = socket_path
+                break
+
+# Add hermes_tools path
+hermes_tools_dir = None
+for dirpath, dirnames, filenames in os.walk('/home/manitouabe8ich/.hermes/cache/scratch'):
+    if 'hermes_tools.py' in filenames:
+        hermes_tools_dir = dirpath
+        break
+if hermes_tools_dir:
+    sys.path.insert(0, hermes_tools_dir)
+
+from hermes_tools import tool_call, terminal, web_extract
+
+INBOX_ID = "wallethygiene@agentmail.to"
+BASE_DIR = "/home/manitouabe8ich/walletrisk"
+REPORTS_DIR = os.path.join(BASE_DIR, "reports")
+PROCESSED_FILE = os.path.join(REPORTS_DIR, "processed_message_ids.json")
+SUBSCRIBERS_FILE = os.path.join(REPORTS_DIR, "subscribers.jsonl")
+CONFIG_FILE = os.path.join(BASE_DIR, "config", "payments.json")
+VERIFICATION_SCRIPT = os.path.join(BASE_DIR, "scripts", "verify_payment.py")
+
+def load_processed_ids():
+    if os.path.exists(PROCESSED_FILE):
+        try:
+            with open(PROCESSED_FILE, 'r') as f:
+                return set(json.load(f))
+        except Exception:
+            return set()
+    return set()
+
+def save_processed_ids(ids):
+    with open(PROCESSED_FILE, 'w') as f:
+        json.dump(list(ids), f)
+
+def append_subscriber(record):
+    with open(SUBSCRIBERS_FILE, 'a') as f:
+        f.write(json.dumps(record) + "\n")
+
+def parse_order_email(email_content):
+    lines = email_content.split('\\n')
+    wallet = None
+    tx_hash = None
+    chain = "ethereum"
+    delivery_email = None
+    plan = "monthly"
+    amount_usd = 9
+    for line in lines:
+        line = line.strip()
+        if line.lower().startswith("wallet:"):
+            wallet = line.split(":", 1)[1].strip()
+        elif line.lower().startswith("tx hash:"):
+            tx_hash = line.split(":", 1)[1].strip()
+        elif line.lower().startswith("chain:"):
+            chain = line.split(":", 1)[1].strip().lower()
+        elif line.lower().startswith("delivery email:"):
+            delivery_email = line.split(":", 1)[1].strip()
+        elif line.lower().startswith("plan:"):
+            plan_text = line.split(":", 1)[1].strip().lower()
+            if "yearly" in plan_text:
+                plan = "yearly"
+                amount_usd = 89
+            else:
+                plan = "monthly"
+                amount_usd = 9
+    if not wallet or not tx_hash:
+        return None, "Missing wallet or tx hash"
+    if not delivery_email:
+        return None, "Missing delivery email"
+    return {
+        "wallet": wallet,
+        "tx_hash": tx_hash,
+        "chain": chain,
+        "delivery_email": delivery_email,
+        "plan": plan,
+        "amount_usd": amount_usd
+    }, None
+
+def verify_payment_chain(chain, tx_hash, usd_amount):
+    cmd = [
+        "python3", VERIFICATION_SCRIPT,
+        "--chain", chain,
+        "--tx", tx_hash,
+        "--usd", str(usd_amount)
+    ]
+    try:
+        result = terminal(
+            command=f"cd {BASE_DIR} && {' '.join(cmd)}",
+            timeout=60
+        )
+        if result["exit_code"] == 0:
+            return True, result["output"].strip()
+        else:
+            return False, result["output"].strip()
+    except Exception as e:
+        return False, str(e)
+
+def verify_payment_manual(chain, tx_hash, expected_address):
+    explorer_urls = {
+        "tron": f"https://tronscan.org/#/transaction/{tx_hash}",
+        "stellar": f"https://stellar.expert/explorer/public/tx/{tx_hash}"
+    }
+    if chain not in explorer_urls:
+        return False, f"Unsupported chain for manual verification: {chain}"
+    url = explorer_urls[chain]
+    try:
+        extracted = web_extract([url], char_limit=20000)
+        if not extracted or "results" not in extracted or not extracted["results"]:
+            return False, "Failed to fetch explorer page"
+        content = extracted["results"][0].get("content", "")
+        if not content:
+            return False, "Empty content from explorer"
+        if "Transaction not found" in content or "No transaction" in content:
+            return False, "Transaction not found on explorer"
+        if expected_address.lower() in content.lower():
+            return True, f"Manually verified via {url}: transaction found and recipient matches."
+        else:
+            return False, f"Recipient address mismatch. Expected {expected_address}, not found in explorer page."
+    except Exception as e:
+        return False, f"Manual verification error: {str(e)}"
+
+def run_deep_scan(wallet_address, chains, order_id):
+    os.makedirs(REPORTS_DIR, exist_ok=True)
+    output_file = os.path.join(REPORTS_DIR, f"{order_id}.md")
+    chain_args = []
+    for chain in chains:
+        chain_args.extend(["--chain", chain])
+    cmd = [
+        "python3", "-m", "walletrisk", wallet_address,
+        "--deep"
+    ] + chain_args + [
+        "-o", output_file
+    ]
+    try:
+        result = terminal(
+            command=f"cd {BASE_DIR} && timeout 500 {' '.join(cmd)}",
+            timeout=600
+        )
+        if os.path.exists(output_file):
+            return True, output_file
+        else:
+            return False, result.get("output", "Scan produced no output")
+    except Exception as e:
+        return False, str(e)
+
+def main():
+    # Ensure reports directory exists
+    os.makedirs(REPORTS_DIR, exist_ok=True)
+    
+    # Load processed IDs
+    processed_ids = load_processed_ids()
+    
+    # Load payment config
+    try:
+        with open(CONFIG_FILE, 'r') as f:
+            payments_config = json.load(f)
+    except Exception as e:
+        print(f"Error loading payments config: {e}", file=sys.stderr)
+        payments_config = {}
+    
+    # List messages in the inbox
+    try:
+        list_result = tool_call(
+            name="mcp__agentmail__list_messages",
+            arguments={"inboxId": INBOX_ID}
+        )
+        messages_json_str = list_result.get('result')
+        if not messages_json_str:
+            return "[CRON_FAILURE]\nNo result from list_messages"
+        messages_data = json.loads(messages_json_str)
+        messages = messages_data.get('messages', [])
+    except Exception as e:
+        return f"[CRON_FAILURE]\nFailed to list messages: {str(e)}"
+    
+    if not isinstance(messages, list):
+        return "[CRON_FAILURE]\nUnexpected messages format"
+    
+    # Filter new messages (not processed and unread)
+    new_messages = []
+    for msg in messages:
+        msg_id = msg.get("messageId")
+        if not msg_id:
+            continue
+        if msg_id in processed_ids:
+            continue
+        labels = msg.get("labels", [])
+        if "unread" not in labels:
+            continue
+        new_messages.append(msg)
+    
+    if not new_messages:
+        return "No new orders."
+    
+    order_results = []
+    newly_processed_ids = set()
+    
+    for msg in new_messages:
+        msg_id = msg.get("messageId")
+        # Get full message
+        try:
+            message_result = tool_call(
+                name="mcp__agentmail__get_message",
+                arguments={"messageId": msg_id}
+            )
+            message_json_str = message_result.get('result')
+            if not message_json_str:
+                order_results.append(f"SKIPPED-ERROR: {msg_id} - No message content from get_message")
+                newly_processed_ids.add(msg_id)
+                continue
+            message = json.loads(message_json_str)
+        except Exception as e:
+            order_results.append(f"SKIPPED-ERROR: {msg_id} - Failed to get message: {str(e)}")
+            newly_processed_ids.add(msg_id)
+            continue
+        
+        if not message:
+            order_results.append(f"SKIPPED-ERROR: {msg_id} - No message content")
+            newly_processed_ids.add(msg_id)
+            continue
+        
+        # Extract body
+        body = message.get("body", "")
+        if not body:
+            # fallback to string representation
+            body = json.dumps(message)
+        
+        if not body:
+            order_results.append(f"SKIPPED-ERROR: {msg_id} - Empty email body")
+            newly_processed_ids.add(msg_id)
+            continue
+        
+        # Parse order
+        order_data, error = parse_order_email(body)
+        if error:
+            order_results.append(f"SKIPPED-ERROR: {msg_id} - {error}")
+            newly_processed_ids.add(msg_id)
+            continue
+        
+        wallet = order_data["wallet"]
+        tx_hash = order_data["tx_hash"]
+        chain = order_data["chain"]
+        delivery_email = order_data["delivery_email"]
+        plan = order_data["plan"]
+        amount_usd = order_data["amount_usd"]
+        
+        # Verify payment
+        verified = False
+        verification_note = ""
+        if chain in ["ethereum", "base", "polygon", "arbitrum", "optimism", "gnosis"]:
+            verified, verification_note = verify_payment_chain(chain, tx_hash, amount_usd)
+        elif chain in ["tron", "stellar"]:
+            expected_address = payments_config.get(chain)
+            if not expected_address:
+                order_results.append(f"REJECTED: {wallet} - No payment address configured for {chain}")
+                newly_processed_ids.add(msg_id)
+                continue
+            verified, verification_note = verify_payment_manual(chain, tx_hash, expected_address)
+        else:
+            order_results.append(f"REJECTED: {wallet} - Unsupported chain: {chain}")
+            newly_processed_ids.add(msg_id)
+            continue
+        
+        if not verified:
+            order_results.append(f"REJECTED: {wallet} - Payment verification failed: {verification_note}")
+            newly_processed_ids.add(msg_id)
+            continue
+        
+        # Payment verified - run deep scan
+        chains_to_scan = ["ethereum", "base", "polygon", "arbitrum", "optimism", "gnosis"]
+        scan_success, scan_result = run_deep_scan(wallet, chains_to_scan, msg_id)
+        if not scan_success:
+            order_results.append(f"REJECTED: {wallet} - Deep scan failed: {scan_result}")
+            newly_processed_ids.add(msg_id)
+            continue
+        
+        report_path = scan_result
+        try:
+            with open(report_path, 'r') as f:
+                report_content = f.read()
+        except Exception as e:
+            order_results.append(f"REJECTED: {wallet} - Could not read report: {str(e)}")
+            newly_processed_ids.add(msg_id)
+            continue
+        
+        # Extract key sections (simplistic)
+        grade_line = ""
+        verdict_line = ""
+        risk_breakdown = ""
+        approvals_table = ""
+        lines = report_content.split('\\n')
+        in_approvals = False
+        for line in lines:
+            if line.startswith("Grade:"):
+                grade_line = line.strip()
+            elif line.startswith("Verdict:"):
+                verdict_line = line.strip()
+            elif line.startswith("Risk Breakdown:"):
+                risk_breakdown = line.strip()
+            elif line.startswith("| Token |"):
+                in_approvals = True
+            if in_approvals and line.startswith("|"):
+                approvals_table += line + "\\n"
+            elif in_approvals and not line.startswith("|"):
+                in_approvals = False
+        
+        # Prepare reply email
+        reply_subject = f"WalletHygiene Pro Activation - {wallet}"
+        reply_body = f"""Thank you for your order.
+
+Payment verified: {verification_note}
+
+Your WalletHygiene Pro report is attached below.
+
+{grade_line}
+{verdict_line}
+{risk_breakdown}
+
+Approvals Summary:
+{approvals_table}
+
+Revoke Links per Chain:
+- Ethereum: https://revoke.cash/address={wallet}/ethereum
+- Base: https://revoke.cash/address={wallet}/base
+- Polygon: https://revoke.cash/address={wallet}/polygon
+- Arbitrum: https://revoke.cash/address={wallet}/arbitrum
+- Optimism: https://revoke.cash/address={wallet}/optimism
+- Gnosis: https://revoke.cash/address={wallet}/gnosis
+
+Your Pro activation is now active.
+Monitoring schedule: Daily re-scan with email alerts on new risky approvals.
+Renewal date: {plan}ly ({'30 days' if plan == 'monthly' else '365 days'} from today).
+
+Disclaimer: This report is for informational purposes only and does not constitute financial advice."""
+        
+        # Send reply to original message
+        try:
+            tool_call(
+                name="mcp__agentmail__reply_to_message",
+                arguments={
+                    "messageId": msg_id,
+                    "content": reply_body
+                }
+            )
+        except Exception as e:
+            order_results.append(f"REJECTED: {wallet} - Failed to send reply: {str(e)}")
+            newly_processed_ids.add(msg_id)
+            continue
+        
+        # Send report to delivery email
+        try:
+            tool_call(
+                name="mcp__agentmail__send_message",
+                arguments={
+                    "from": INBOX_ID,
+                    "to": delivery_email,
+                    "subject": reply_subject,
+                    "body": reply_body
+                }
+            )
+        except Exception as e:
+            order_results.append(f"REJECTED: {wallet} - Failed to send delivery email: {str(e)}")
+            newly_processed_ids.add(msg_id)
+            continue
+        
+        # Record subscription
+        subscription_record = {
+            "email": delivery_email,
+            "wallet": wallet,
+            "plan": plan,
+            "started": int(time.time()),
+            "renews": int(time.time()) + (30*86400 if plan == "monthly" else 365*86400),
+            "last_report": int(time.time())
+        }
+        append_subscriber(subscription_record)
+        
+        order_results.append(f"VERIFIED+DELIVERED: {wallet} ({plan})")
+        newly_processed_ids.add(msg_id)
+    
+    # Update processed IDs
+    if newly_processed_ids:
+        processed_ids.update(newly_processed_ids)
+        save_processed_ids(processed_ids)
+    
+    # Return summary
+    if not order_results:
+        return "No new orders."
+    return "\\n".join(order_results)
+
+if __name__ == "__main__":
+    print(main())

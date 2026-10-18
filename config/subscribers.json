@@ -15,7 +15,7 @@
             "spender": "0x111111125421ca6dc452d289314280a0f8842a65",
             "severity": "HIGH",
             "unlimited": true,
-            "exposure_usd": 335600.0
+            "exposure_usd": 321800.0
           }
         ]
       }

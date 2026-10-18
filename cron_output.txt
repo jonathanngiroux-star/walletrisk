@@ -1,0 +1,2 @@
+[CRON_FAILURE]
+AgentMail connector not connected.
