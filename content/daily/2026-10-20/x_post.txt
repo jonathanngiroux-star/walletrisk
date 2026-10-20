@@ -1,0 +1,8 @@
+What does your wallet look like to an attacker?
+
+0xde0b29…7bae · grade A
+• $13.73M across 1 chains
+• 0 live approvals flagged, 0 unlimited
+• $0.00 exposed
+
+Free tool, no wallet connect, no keys — just an address.

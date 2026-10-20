@@ -1,0 +1,9 @@
+What does your wallet look like to an attacker? 0xde0b29…7bae, grade A. Free tool, no wallet connect, no keys — just an address. 🧵
+
+1/ Portfolio: $13.73M across 1 chains. Top: —
+
+2/ Approvals: 0 live flagged, 0 UNLIMITED. Total exposure ~$0.00. An unlimited approval lets the spender contract take the token anytime — revoke.cash lists yours free.
+
+3/ Every number here is live on-chain data read at scan time — allowance() calls, not guesses. Public data only, zero keys.
+
+4/ Want yours scanned? Drop an address below or use the free tool. Not financial advice — information only.
