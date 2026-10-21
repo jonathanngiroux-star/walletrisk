@@ -1,0 +1,8 @@
+Free scan, real on-chain data:
+
+0xd8da6b…6045 · grade A
+• $0.00 across 0 chains
+• 0 live approvals flagged, 0 unlimited
+• $0.00 exposed
+
+Free tool, no wallet connect, no keys — just an address.

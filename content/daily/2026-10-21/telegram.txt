@@ -1,0 +1,8 @@
+🛡 WalletRisk daily scan
+`0xd8da6bf26964af9d7eed9e03e53415d37aa96045` (vitalik.eth)
+Grade A — No live approvals found by this scan.
+Portfolio ~$0.00 · 0 live approvals (0 unlimited) · ~$0.00 exposed
+
+
+Free tool, no keys. Not financial advice.
+Free tool, no wallet connect, no keys — just an address.
